@@ -1,7 +1,3 @@
-export default function Home() {
-  return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  )
+export default async function Home() {
+  return <div className="text-red-500">hi</div>
 }
