@@ -1,3 +1,5 @@
+import Button from "./components/ui/Button";
+
 export default async function Home() {
-  return <div className="text-red-500">hi</div>
+  return <Button variant="ghost">Hellow</Button>
 }
