@@ -1,19 +1,16 @@
 import { Server } from "socket.io";
 import Redis from "ioredis";
 
-const pub = new Redis({
-  host: "",
-  port: 0,
-  username: "default",
-  password: "",
-});
+const redisConfig = {
+  host: process.env.HOST || "",
+  port: parseInt(process.env.PORT || "0"),
+  username: process.env.USER,
+  password: process.env.PASSWORD,
+};
 
-const sub = new Redis({
-  host: "",
-  port: 0,
-  username: "",
-  password: "",
-});
+const pub = new Redis(redisConfig);
+
+const sub = new Redis(redisConfig);
 
 class SocketService {
   private _io: Server;
@@ -46,8 +43,6 @@ class SocketService {
       if (channel === "MESSAGES") {
         console.log("new message from redis", message);
         io.emit("message", message);
-        await produceMessage(message);
-        console.log("Message Produced to Kafka Broker");
       }
     });
   }
