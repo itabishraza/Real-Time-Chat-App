@@ -13,6 +13,7 @@ interface Message {
   timestamp: Date;
 }
 
+/* eslint-disable no-unused-vars */
 interface ServerToClientEvents {
   'room-created': (code: string) => void;
   'joined-room': (data: { roomCode: string; messages: Message[] }) => void;
@@ -31,7 +32,7 @@ interface ClientToServerEvents {
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('http://localhost:4000');
 
-export function Chat() {
+export default function Page() {
   const [roomCode, setRoomCode] = useState<string>('');
   const [inputCode, setInputCode] = useState<string>('');
   const [message, setMessage] = useState<string>('');
@@ -51,7 +52,6 @@ export function Chat() {
   }, [messages]);
 
   useEffect(() => {
-    // Try to get existing userId from localStorage
     const storedUserId = localStorage.getItem('chatUserId');
     const newUserId = storedUserId || crypto.randomUUID();
     
@@ -212,7 +212,3 @@ export function Chat() {
     </div>
   );
 }
-
-export default function HomePage() {
-  return <Chat />;
-} 
