@@ -1,10 +1,13 @@
 "use client"
 
+import * as React from "react"
 import { useEffect, useState, ChangeEvent, FormEvent, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { MessageCircleIcon } from "lucide-react";
 
 interface Message {
   id: string;
@@ -126,89 +129,97 @@ export default function Page() {
   };
 
   return (
-    <div className="container mx-auto max-w-2xl p-4 h-screen flex items-center justify-center">
-      <Card className="w-full">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Real-time Chat</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!connected ? (
-            <div className="space-y-4">
-              <Button 
-                onClick={createRoom} 
-                className="w-full text-lg py-6"
-                size="lg"
-              >
-                Create New Room
-              </Button>
-              <div className="flex gap-2">
-                <Input
-                  value={inputCode}
-                  onChange={handleInputChange}
-                  placeholder="Enter Room Code"
-                  className="text-lg py-5"
-                />
+    <>
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+      <div className="container mx-auto max-w-2xl p-4 h-screen flex items-center justify-center">
+        <Card className="w-full">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl flex items-center gap-2 font-bold">
+              <MessageCircleIcon className="w-6 h-6" />
+              Real Time Chat
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!connected ? (
+              <div className="space-y-4">
                 <Button 
-                  onClick={joinRoom}
+                  onClick={createRoom} 
+                  className="w-full text-lg py-6"
                   size="lg"
-                  className="px-8"
                 >
-                  Join Room
+                  Create New Room
                 </Button>
-              </div>
-              {roomCode && (
-                <div className="text-center p-6 bg-muted rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-2">Share this code with your friend</p>
-                  <span className="font-mono text-2xl font-bold">{roomCode}</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                <span>Room Code: <span className="font-mono font-bold">{roomCode}</span></span>
-                <span>Users: {users}/2</span>
-              </div>
-              <div className="h-[500px] overflow-y-auto border rounded-lg p-4 space-y-4">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${
-                      msg.senderId === userId ? 'justify-end' : 'justify-start'
-                    }`}
+                <div className="flex gap-2">
+                  <Input
+                    value={inputCode}
+                    onChange={handleInputChange}
+                    placeholder="Enter Room Code"
+                    className="text-lg py-5"
+                  />
+                  <Button 
+                    onClick={joinRoom}
+                    size="lg"
+                    className="px-8"
                   >
+                    Join Room
+                  </Button>
+                </div>
+                {roomCode && (
+                  <div className="text-center p-6 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-2">Share this code with your friend</p>
+                    <span className="font-mono text-2xl font-bold">{roomCode}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                  <span>Room Code: <span className="font-mono font-bold">{roomCode}</span></span>
+                  <span>Users: {users}/2</span>
+                </div>
+                <div className="h-[500px] overflow-y-auto border rounded-lg p-4 space-y-4">
+                  {messages.map((msg) => (
                     <div
-                      className={`rounded-lg px-4 py-2 max-w-[70%] ${
-                        msg.senderId === userId
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
+                      key={msg.id}
+                      className={`flex ${
+                        msg.senderId === userId ? 'justify-end' : 'justify-start'
                       }`}
                     >
-                      {msg.content}
+                      <div
+                        className={`rounded-lg px-4 py-2 max-w-[70%] ${
+                          msg.senderId === userId
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+                <form onSubmit={sendMessage} className="flex gap-2">
+                  <Input
+                    value={message}
+                    onChange={handleMessageChange}
+                    placeholder="Type a message..."
+                    className="text-lg py-6"
+                  />
+                  <Button 
+                    type="submit"
+                    size="lg"
+                    className="px-8"
+                  >
+                    Send
+                  </Button>
+                </form>
               </div>
-              <form onSubmit={sendMessage} className="flex gap-2">
-                <Input
-                  value={message}
-                  onChange={handleMessageChange}
-                  placeholder="Type a message..."
-                  className="text-lg py-6"
-                />
-                <Button 
-                  type="submit"
-                  size="lg"
-                  className="px-8"
-                >
-                  Send
-                </Button>
-              </form>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
