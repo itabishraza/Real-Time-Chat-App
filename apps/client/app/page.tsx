@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { MessageCircleIcon } from "lucide-react";
+import { MessageCircleIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner"
 
 interface Message {
@@ -44,6 +44,7 @@ export default function Page() {
   const [connected, setConnected] = useState<boolean>(false);
   const [users, setUsers] = useState<number>(0);
   const [userId, setUserId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +72,7 @@ export default function Page() {
   useEffect(() => {
     socket.on('room-created', (code) => {
       setRoomCode(code);
+      setIsLoading(false);
       toast.success('Room created successfully!');
     });
 
@@ -98,6 +100,7 @@ export default function Page() {
 
     socket.on('error', (error) => {
       toast.error(error);
+      setIsLoading(false);
       if (error === 'Room not found' || error === 'Room is full') {
         setInputCode('');
       }
@@ -114,6 +117,7 @@ export default function Page() {
   }, []);
 
   const createRoom = () => {
+    setIsLoading(true);
     socket.emit('create-room');
   };
 
@@ -164,8 +168,16 @@ export default function Page() {
                   onClick={createRoom} 
                   className="w-full text-lg py-6"
                   size="lg"
+                  disabled={isLoading}
                 >
-                  Create New Room
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating room...
+                    </>
+                  ) : (
+                    "Create New Room"
+                  )}
                 </Button>
                 <div className="flex gap-2">
                   <Input
