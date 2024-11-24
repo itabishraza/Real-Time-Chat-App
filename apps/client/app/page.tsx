@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { MessageCircleIcon } from "lucide-react";
+import { toast } from "sonner"
 
 interface Message {
   id: string;
@@ -70,12 +71,15 @@ export default function Page() {
   useEffect(() => {
     socket.on('room-created', (code) => {
       setRoomCode(code);
+      toast.success('Room created successfully!');
     });
 
     socket.on('joined-room', ({ roomCode, messages }) => {
       setRoomCode(roomCode);
       setMessages(messages);
       setConnected(true);
+      setInputCode('');
+      toast.success('Joined room successfully!');
     });
 
     socket.on('new-message', (message) => {
@@ -84,14 +88,19 @@ export default function Page() {
 
     socket.on('user-joined', (userCount) => {
       setUsers(userCount);
+      toast.info('A user has joined the room');
     });
 
     socket.on('user-left', (userCount) => {
       setUsers(userCount);
+      toast.info('A user has left the room');
     });
 
     socket.on('error', (error) => {
-      alert(error);
+      toast.error(error);
+      if (error === 'Room not found' || error === 'Room is full') {
+        setInputCode('');
+      }
     });
 
     return () => {
@@ -109,6 +118,10 @@ export default function Page() {
   };
 
   const joinRoom = () => {
+    if (!inputCode.trim()) {
+      toast.error('Please enter a room code');
+      return;
+    }
     socket.emit('join-room', inputCode.toUpperCase());
   };
 
