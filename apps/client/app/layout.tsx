@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { JetBrains_Mono } from "next/font/google"
+import { Analytics } from "@vercel/analytics/react"
 
 const jetbrainsMono = JetBrains_Mono({ 
   subsets: ['latin'],
@@ -29,6 +30,7 @@ export default function RootLayout({
           enableSystem 
           disableTransitionOnChange
         >
+          <Analytics />
           {children}
           <Toaster />
         </ThemeProvider>
