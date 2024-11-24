@@ -1,38 +1,24 @@
 import express from 'express';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { randomBytes } from 'crypto';
-
-interface RoomData {
-  users: number;
-  messages: Message[];
-}
 
 interface Message {
   id: string;
   content: string;
-  sender: string;
+  senderId: string;
   timestamp: Date;
 }
 
-interface ServerToClientEvents {
-  'room-created': (code: string) => void;
-  'joined-room': (data: { roomCode: string; messages: Message[] }) => void;
-  'new-message': (message: Message) => void;
-  'user-joined': (userCount: number) => void;
-  'user-left': (userCount: number) => void;
-  error: (message: string) => void;
-}
-
-interface ClientToServerEvents {
-  'create-room': () => void;
-  'join-room': (roomCode: string) => void;
-  'send-message': (data: { roomCode: string; message: string }) => void;
+interface RoomData {
+  users: Set<string>;
+  messages: Message[];
+  lastActive: number;
 }
 
 const app = express();
 const httpServer = createServer(app);
-const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
+const io = new Server(httpServer, {
   cors: {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"]
@@ -41,16 +27,24 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 
 const rooms = new Map<string, RoomData>();
 
-io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
+io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
+  
+  socket.on('set-user-id', (userId: string) => {
+    // Track user connection
+  });
 
   socket.on('create-room', () => {
     const roomCode = randomBytes(3).toString('hex').toUpperCase();
-    rooms.set(roomCode, { users: 0, messages: [] });
+    rooms.set(roomCode, { 
+      users: new Set<string>(),
+      messages: [],
+      lastActive: Date.now()
+    });
     socket.emit('room-created', roomCode);
   });
 
-  socket.on('join-room', (roomCode: string) => {
+  socket.on('join-room', (roomCode) => {
     const room = rooms.get(roomCode);
     
     if (!room) {
@@ -58,25 +52,27 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
       return;
     }
 
-    if (room.users >= 2) {
+    if (room.users.size >= 2) {
       socket.emit('error', 'Room is full');
       return;
     }
 
     socket.join(roomCode);
-    room.users++;
+    room.users.add(socket.id);
+    room.lastActive = Date.now();
     
     socket.emit('joined-room', { roomCode, messages: room.messages });
-    io.to(roomCode).emit('user-joined', room.users);
+    io.to(roomCode).emit('user-joined', room.users.size);
   });
 
-  socket.on('send-message', ({ roomCode, message }) => {
+  socket.on('send-message', ({ roomCode, message, userId }) => {
     const room = rooms.get(roomCode);
     if (room) {
+      room.lastActive = Date.now();
       const messageData: Message = {
         id: randomBytes(4).toString('hex'),
         content: message,
-        sender: socket.id,
+        senderId: userId,
         timestamp: new Date()
       };
       room.messages.push(messageData);
@@ -86,17 +82,28 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
   socket.on('disconnect', () => {
     rooms.forEach((room, roomCode) => {
-      if (room.users > 0) {
-        room.users--;
-        io.to(roomCode).emit('user-left', room.users);
-        
-        if (room.users === 0) {
+      if (room.users.has(socket.id)) {
+        room.users.delete(socket.id);
+        io.to(roomCode).emit('user-left', room.users.size);
+
+        if (room.users.size === 0) {
+          console.log(`Deleting empty room: ${roomCode}`);
           rooms.delete(roomCode);
         }
       }
     });
   });
 });
+
+setInterval(() => {
+  const now = Date.now();
+  rooms.forEach((room, roomCode) => {
+    if (room.users.size === 0 && now - room.lastActive > 3600000) {
+      console.log(`Cleaning up inactive room: ${roomCode}`);
+      rooms.delete(roomCode);
+    }
+  });
+}, 3600000);
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
