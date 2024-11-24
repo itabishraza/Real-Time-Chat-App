@@ -30,7 +30,7 @@ interface ClientToServerEvents {
   'set-user-id': (userId: string) => void;
 }
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('http://localhost:4000');
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('https://real-time-chat-cvqd.onrender.com/' || 'http://localhost:4000');
 
 export default function Page() {
   const [roomCode, setRoomCode] = useState<string>('');
