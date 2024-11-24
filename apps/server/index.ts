@@ -20,7 +20,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:3000" || "https://real-time-chat-amritwt.vercel.app" || "https://real-time-chat-git-main-amritwt.vercel.app/"],
+    origin: ["http://localhost:3000", "https://real-time-chat-amritwt.vercel.app", "https://real-time-chat-git-main-amritwt.vercel.app/"],
     methods: ["GET", "POST"]
   }
 });
