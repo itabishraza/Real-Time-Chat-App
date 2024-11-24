@@ -64,7 +64,10 @@ const config = {
   				'5': 'hsl(var(--chart-5))'
   			}
   		}
-  	}
+  	},
+  	fontFamily: {
+  		mono: ["var(--font-jetbrains-mono)", "monospace"],
+  	},
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config

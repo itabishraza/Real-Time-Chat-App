@@ -5,7 +5,7 @@ import { useEffect, useState, ChangeEvent, FormEvent, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { MessageCircleIcon } from "lucide-react";
 import { toast } from "sonner"
@@ -153,6 +153,9 @@ export default function Page() {
               <MessageCircleIcon className="w-6 h-6" />
               Real Time Chat
             </CardTitle>
+            <CardDescription>
+              temporary room that expires after both users exit
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {!connected ? (
