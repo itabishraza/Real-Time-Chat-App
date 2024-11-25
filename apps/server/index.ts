@@ -7,6 +7,7 @@ interface Message {
   id: string;
   content: string;
   senderId: string;
+  sender:string;
   timestamp: Date;
 }
 
@@ -43,18 +44,15 @@ io.on('connection', (socket) => {
     socket.emit('room-created', roomCode);
   });
 
-  socket.on('join-room', (roomCode) => {
+  socket.on('join-room', (data) => {
+    const parsedData = JSON.parse(data);
+    const roomCode = parsedData.roomId;
     const room = rooms.get(roomCode);
     
     if (!room) {
       socket.emit('error', 'Room not found');
       return;
     }
-
-    // if (room.users.size >= 2) {
-    //   socket.emit('error', 'Room is full');
-    //   return;
-    // }
 
     socket.join(roomCode);
     room.users.add(socket.id);
@@ -64,7 +62,7 @@ io.on('connection', (socket) => {
     io.to(roomCode).emit('user-joined', room.users.size);
   });
 
-  socket.on('send-message', ({ roomCode, message, userId }) => {
+  socket.on('send-message', ({ roomCode, message, userId ,name}) => {
     const room = rooms.get(roomCode);
     if (room) {
       room.lastActive = Date.now();
@@ -72,6 +70,7 @@ io.on('connection', (socket) => {
         id: randomBytes(4).toString('hex'),
         content: message,
         senderId: userId,
+        sender:name,
         timestamp: new Date()
       };
       room.messages.push(messageData);

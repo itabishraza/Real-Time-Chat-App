@@ -14,6 +14,7 @@ interface Message {
   id: string;
   content: string;
   senderId: string;
+  sender:string;
   timestamp: Date;
 }
 
@@ -30,7 +31,7 @@ interface ServerToClientEvents {
 interface ClientToServerEvents {
   'create-room': () => void;
   'join-room': (roomCode: string) => void;
-  'send-message': (data: { roomCode: string; message: string; userId: string }) => void;
+  'send-message': (data: { roomCode: string; message: string; userId: string , name:string}) => void;
   'set-user-id': (userId: string) => void;
 }
 
@@ -39,6 +40,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io( 'http://l
 export default function Page() {
   const [roomCode, setRoomCode] = useState<string>('');
   const [inputCode, setInputCode] = useState<string>('');
+  const [name, setName] = useState<string>("")
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [connected, setConnected] = useState<boolean>(false);
@@ -126,11 +128,14 @@ export default function Page() {
       toast.error('Please enter a room code');
       return;
     }
-    socket.emit('join-room', inputCode.toUpperCase());
+    socket.emit('join-room', JSON.stringify({roomId:inputCode.toUpperCase(),name}));
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputCode(e.target.value);
+  };
+  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
   };
 
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +145,7 @@ export default function Page() {
   const sendMessage = (e: FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
-      socket.emit('send-message', { roomCode, message, userId });
+      socket.emit('send-message', { roomCode, message, userId,name });
       setMessage('');
     }
   };
@@ -181,6 +186,21 @@ export default function Page() {
                 </Button>
                 <div className="flex gap-2">
                   <Input
+                    value={name}
+                    onChange={handleNameChange}
+                    placeholder="Enter your name"
+                    className="text-lg py-5"
+                  />
+                  {/* <Button 
+                    onClick={joinRoom}
+                    size="lg"
+                    className="px-8"
+                  >
+                    Enter 
+                  </Button> */}
+                </div>
+                <div className="flex gap-2">
+                  <Input
                     value={inputCode}
                     onChange={handleInputChange}
                     placeholder="Enter Room Code"
@@ -194,6 +214,7 @@ export default function Page() {
                     Join Room
                   </Button>
                 </div>
+   
                 {roomCode && (
                   <div className="text-center p-6 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground mb-2">Share this code with your friend</p>
@@ -207,16 +228,19 @@ export default function Page() {
                   <span>Room Code: <span className="font-mono font-bold">{roomCode}</span></span>
                   <span>Users: {users}</span>
                 </div>
-                <div className="h-[500px] overflow-y-auto border rounded-lg p-4 space-y-4">
+                <div className="h-[500px] overflow-y-auto border rounded-lg p-4 space-y-4 ">
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`flex ${
+                      className={`flex flex-col ${
                         msg.senderId === userId ? 'justify-end' : 'justify-start'
                       }`}
                     >
+                      <div>
+                      {msg.sender}
+                      </div>
                       <div
-                        className={`rounded-lg px-4 py-2 max-w-[70%] ${
+                        className={`rounded-lg px-4 py-2 max-w-[70%] break-words ${
                           msg.senderId === userId
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
