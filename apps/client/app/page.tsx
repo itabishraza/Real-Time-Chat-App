@@ -35,7 +35,7 @@ interface ClientToServerEvents {
   'set-user-id': (userId: string) => void;
 }
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io( 'http://localhost:4000');
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('localhost:4000' || 'https://real-time-chat-tmzf.onrender.com');
 
 export default function Page() {
   const [roomCode, setRoomCode] = useState<string>('');
@@ -128,6 +128,12 @@ export default function Page() {
       toast.error('Please enter a room code');
       return;
     }
+    
+    if (!name.trim()) {
+      toast.error('Please enter your name');
+      return;
+    }
+    
     socket.emit('join-room', JSON.stringify({roomId:inputCode.toUpperCase(),name}));
   };
 
@@ -163,7 +169,7 @@ export default function Page() {
               Real Time Chat
             </CardTitle>
             <CardDescription>
-              temporary room that expires after both users exit
+              temporary room that expires after all users exit
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -191,13 +197,6 @@ export default function Page() {
                     placeholder="Enter your name"
                     className="text-lg py-5"
                   />
-                  {/* <Button 
-                    onClick={joinRoom}
-                    size="lg"
-                    className="px-8"
-                  >
-                    Enter 
-                  </Button> */}
                 </div>
                 <div className="flex gap-2">
                   <Input
@@ -234,14 +233,14 @@ export default function Page() {
                     <div
                       key={msg.id}
                       className={`flex flex-col ${
-                        msg.senderId === userId ? 'justify-end' : 'justify-start'
+                        msg.senderId === userId ? 'items-end' : 'items-start'
                       }`}
                     >
-                      <div>
-                      {msg.sender}
+                      <div className="text-xs text-muted-foreground mb-1">
+                        {msg.sender}
                       </div>
                       <div
-                        className={`rounded-lg px-4 py-2 max-w-[70%] break-words ${
+                        className={`inline-block rounded-lg px-4 py-2 break-words ${
                           msg.senderId === userId
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
