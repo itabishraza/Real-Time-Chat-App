@@ -51,10 +51,10 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if (room.users.size >= 2) {
-      socket.emit('error', 'Room is full');
-      return;
-    }
+    // if (room.users.size >= 2) {
+    //   socket.emit('error', 'Room is full');
+    //   return;
+    // }
 
     socket.join(roomCode);
     room.users.add(socket.id);

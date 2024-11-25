@@ -34,7 +34,7 @@ interface ClientToServerEvents {
   'set-user-id': (userId: string) => void;
 }
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('https://real-time-chat-tmzf.onrender.com/' || 'http://localhost:4000');
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io( 'http://localhost:4000');
 
 export default function Page() {
   const [roomCode, setRoomCode] = useState<string>('');
@@ -205,7 +205,7 @@ export default function Page() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                   <span>Room Code: <span className="font-mono font-bold">{roomCode}</span></span>
-                  <span>Users: {users}/2</span>
+                  <span>Users: {users}</span>
                 </div>
                 <div className="h-[500px] overflow-y-auto border rounded-lg p-4 space-y-4">
                   {messages.map((msg) => (
