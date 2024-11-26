@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { MessageCircleIcon, Loader2 } from "lucide-react";
+import { MessageCircleIcon, Loader2, Copy } from "lucide-react";
 import { toast } from "sonner"
 
 interface Message {
@@ -157,6 +157,18 @@ export default function Page() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.write([
+      new ClipboardItem({
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+      }),
+    ]).then(() => {
+      toast.success('Room code copied to clipboard!');
+    }).catch(() => {
+      toast.error('Failed to copy room code');
+    });
+  };
+
   return (
     <>
       <div className="fixed top-4 right-4 z-50">
@@ -218,14 +230,34 @@ export default function Page() {
                 {roomCode && (
                   <div className="text-center p-6 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground mb-2">Share this code with your friend</p>
-                    <span className="font-mono text-2xl font-bold">{roomCode}</span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="font-mono text-2xl font-bold">{roomCode}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => copyToClipboard(roomCode)}
+                        className="h-8 w-8"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
             ) : (
               <div className="max-w-3xl mx-auto space-y-7">
                 <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                  <span>Room Code: <span className="font-mono font-bold">{roomCode}</span></span>
+                  <div className="flex items-center gap-2">
+                    <span>Room Code: <span className="font-mono font-bold">{roomCode}</span></span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => copyToClipboard(roomCode)}
+                      className="h-6 w-6"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
                   <span>Users: {users}</span>
                 </div>
 
