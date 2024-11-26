@@ -38,6 +38,40 @@ interface ClientToServerEvents {
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://real-time-chat-tmzf.onrender.com';
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SOCKET_URL);
 
+const MessageGroup = ({ messages, userId }: { messages: Message[], userId: string }) => {
+  return (
+    <>
+      {messages.map((msg, index) => {
+        const isFirstInGroup = index === 0 || messages[index - 1]?.senderId !== msg.senderId;
+        
+        return (
+          <div
+            key={msg.id}
+            className={`flex flex-col ${
+              msg.senderId === userId ? 'items-end' : 'items-start'
+            }`}
+          >
+            {isFirstInGroup && (
+              <div className="text-xs text-muted-foreground mb-0.5">
+                {msg.sender}
+              </div>
+            )}
+            <div
+              className={`inline-block rounded-lg px-3 py-1.5 break-words ${
+                msg.senderId === userId
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted'
+              } ${!isFirstInGroup ? 'mt-0.5' : 'mt-1.5'}`}
+            >
+              {msg.content}
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+};
+
 export default function Page() {
   const [roomCode, setRoomCode] = useState<string>('');
   const [inputCode, setInputCode] = useState<string>('');
@@ -261,28 +295,8 @@ export default function Page() {
                   <span>Users: {users}</span>
                 </div>
 
-                <div className="h-[430px] overflow-y-auto border rounded-lg p-4 space-y-4">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex flex-col ${
-                        msg.senderId === userId ? 'items-end' : 'items-start'
-                      }`}
-                    >
-                      <div className="text-xs text-muted-foreground mb-1">
-                        {msg.sender}
-                      </div>
-                      <div
-                        className={`inline-block rounded-lg px-4 py-2 break-words ${
-                          msg.senderId === userId
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        }`}
-                      >
-                        {msg.content}
-                      </div>
-                    </div>
-                  ))}
+                <div className="h-[430px] overflow-y-auto border rounded-lg p-4 space-y-2">
+                  <MessageGroup messages={messages} userId={userId} />
                   <div ref={messagesEndRef} />
                 </div>
                 <form onSubmit={sendMessage} className="flex gap-2">
