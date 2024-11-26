@@ -35,7 +35,8 @@ interface ClientToServerEvents {
   'set-user-id': (userId: string) => void;
 }
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('localhost:4000' || 'https://real-time-chat-tmzf.onrender.com');
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://real-time-chat-tmzf.onrender.com';
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SOCKET_URL);
 
 export default function Page() {
   const [roomCode, setRoomCode] = useState<string>('');
